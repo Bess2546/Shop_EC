@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Shop_Backend.UserService;
 using Shop_Backend.DTOs;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Shop_Backend.Controllers
 {
@@ -43,6 +44,7 @@ namespace Shop_Backend.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<IActionResult> Update(int id, CreateUserRequest request)
         {
             var result = await _service.UpdateUserAsync(id, request);
@@ -52,6 +54,7 @@ namespace Shop_Backend.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> Delete(int id)
         {
             var result = await _service.DeleteUserAsync(id);
