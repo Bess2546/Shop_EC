@@ -1,10 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Shop_Backend.StoreServices;
 using Shop_Backend.DTOs;
+using Microsoft.AspNetCore.Authorization;
+
 
 namespace Shop_Backend.Controllers
 {
@@ -36,6 +34,7 @@ namespace Shop_Backend.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> Create(CreateStoreRequest request)
         {
             var store = await _service.CreateStoreAsync(request);
@@ -43,6 +42,7 @@ namespace Shop_Backend.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<IActionResult> Update(int id, CreateStoreRequest request)
         {
             var result = await _service.UpdateStoreAsync(id, request);
@@ -52,6 +52,7 @@ namespace Shop_Backend.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> Delete(int id)
         {
             var result = await _service.DeleteStoreAsync(id);

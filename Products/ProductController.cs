@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shop_Backend.DTOs;
 using Shop_Backend.ProductService;
@@ -36,6 +37,7 @@ namespace Shop_Backend.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> Create(CreateProductRequest request)
         {
             var product = await _service.CreateProductAsync(request);
@@ -43,6 +45,7 @@ namespace Shop_Backend.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<IActionResult> Update(int id, CreateProductRequest request)
         {
             var result = await _service.UpdateProductAsync(id, request);
@@ -52,6 +55,7 @@ namespace Shop_Backend.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> Delete(int id)
         {
             var result = await _service.DeleteProductAsync(id);

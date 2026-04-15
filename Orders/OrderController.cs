@@ -5,11 +5,13 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Shop_Backend.OrdersService;
 using Shop_Backend.DTOs;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Shop_Backend.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class OrderController : ControllerBase
     {
         private readonly IOrderService _service;
