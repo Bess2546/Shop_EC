@@ -5,10 +5,15 @@
       "Microsoft.AspNetCore": "Warning"
     }
   },
+  "ConnectionStrings": {
+    "DefaultConnection": "Your Host"
+  },
+  "Jwt": {
+    "Key": "YourSuperSecretKeyAtLeast32Characters!!",
+    "Issuer": "ShopBackend",
+    "Audience": "ShopFrontend",
+    "ExpireMinutes": 60
+  },
   
- "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Database=your_db;Username=your_user;Password=your_password"
-},
-
   "AllowedHosts": "*"
 }

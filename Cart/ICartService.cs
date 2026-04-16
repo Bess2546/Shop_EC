@@ -13,5 +13,7 @@ namespace Shop_Backend.CartService
         Task<CartResponse> AddToCartAsync(AddToCartRequest request);
 
         Task<bool> RemoveFromCartAsync(int userId, int CartItemId);
+
+        Task<CartResponse?> UpdateCartItemQuantityAsync(int userId, int cartItemId, int quantity);
     }
 }

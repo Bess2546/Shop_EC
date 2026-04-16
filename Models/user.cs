@@ -9,6 +9,7 @@ namespace Shop_Backend.Models
 
         public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
         public ICollection<Store> Stores { get; set; } = new List<Store>();
+        public string? ProfileImage { get; set; }
         
     }
 }

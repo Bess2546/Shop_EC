@@ -25,7 +25,8 @@ namespace Shop_Backend.ProductService
                 ProductName = product.ProductName,
                 Price = product.Price,
                 Stock = product.Stock,
-                StoreId = product.StoreId
+                StoreId = product.StoreId,
+                ImageUrl = product.ImageUrl
 
             };
         }
@@ -51,7 +52,8 @@ namespace Shop_Backend.ProductService
                 ProductName = request.ProductName,
                 Price = request.Price,
                 Stock = request.Stock,
-                StoreId = request.StoreId
+                StoreId = request.StoreId,
+                ImageUrl = request.ImageUrl
             };
 
             await _repository.AddAsync(product);

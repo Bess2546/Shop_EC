@@ -23,7 +23,7 @@ namespace Shop_Backend.Controller
         }
 
         [HttpGet("{userId}")]
-         public async Task<IActionResult> GetById(int userId)
+        public async Task<IActionResult> GetById(int userId)
         {
             var cart = await _service.GetCartByUserIdAsync(userId);
             if (cart == null) return NotFound();
@@ -41,10 +41,19 @@ namespace Shop_Backend.Controller
         [HttpDelete("{userId}/items/{cartItemId}")]
         public async Task<IActionResult> RemoveItem(int userId, int cartItemId)
         {
-            var result = await _service.RemoveFromCartAsync(userId,cartItemId);
+            var result = await _service.RemoveFromCartAsync(userId, cartItemId);
             if (!result) return NotFound();
 
             return NoContent();
+        }
+
+        [HttpPut("{userId}/items/{cartItemId}")]
+        [Authorize]
+        public async Task<IActionResult> UpdateQuantity(int userId, int cartItemId, [FromBody] UpdateCartItemRequest request)
+        {
+            var cart = await _service.UpdateCartItemQuantityAsync(userId, cartItemId, request.Quantity);
+            if (cart == null) return NotFound();
+            return Ok(cart);
         }
     }
 }

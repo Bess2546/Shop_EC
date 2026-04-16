@@ -32,7 +32,8 @@ namespace Shop_Backend.OrdersService
                     ProductName = i.Product?.ProductName ?? "",
                     Price = i.Price,
                     Quantity = i.Quantity,
-                    Subtotal = i.Price * i.Quantity
+                    Subtotal = i.Price * i.Quantity,
+                    ImageUrl = i.Product?.ImageUrl
                 }).ToList(),
                 TotalPrice = order.OrderItems.Sum(i => i.Price * i.Quantity)
             };

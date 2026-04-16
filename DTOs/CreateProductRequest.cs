@@ -15,6 +15,7 @@ namespace Shop_Backend.DTOs
         [Range(0, int.MaxValue)]
         public int Stock { get; set; }
         public int StoreId { get; set; }
-           
+        
+        public string? ImageUrl { get; set; }
     }
 }

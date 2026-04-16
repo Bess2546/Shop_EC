@@ -12,5 +12,6 @@ namespace Shop_Backend.DTOs
         public DateTime OrderDate { get; set; }
         public List<OrderItemResponse> Items { get; set; } = new();
         public decimal TotalPrice {get; set; }
+        public string? ImageUrl { get; set; }
     }
 }

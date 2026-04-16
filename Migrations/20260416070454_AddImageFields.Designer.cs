@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Shop_Backend.Data;
@@ -11,9 +12,11 @@ using Shop_Backend.Data;
 namespace Shop_Backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260416070454_AddImageFields")]
+    partial class AddImageFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -54,54 +57,6 @@ namespace Shop_Backend.Migrations
                             Id = 3,
                             Name = "Admin"
                         });
-                });
-
-            modelBuilder.Entity("Shop_Backend.Models.Address", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Detail")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("DistrictId")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("IsDefault")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Phone")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("ProvinceId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("SubDistrictId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("ZipCode")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DistrictId");
-
-                    b.HasIndex("ProvinceId");
-
-                    b.HasIndex("SubDistrictId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Addresses");
                 });
 
             modelBuilder.Entity("Shop_Backend.Models.Cart", b =>
@@ -146,32 +101,6 @@ namespace Shop_Backend.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("CartItems");
-                });
-
-            modelBuilder.Entity("Shop_Backend.Models.District", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("NameEn")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("NameTh")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("ProvinceId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProvinceId");
-
-                    b.ToTable("Districts");
                 });
 
             modelBuilder.Entity("Shop_Backend.Models.Order", b =>
@@ -259,56 +188,6 @@ namespace Shop_Backend.Migrations
                     b.ToTable("Products");
                 });
 
-            modelBuilder.Entity("Shop_Backend.Models.Province", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("NameEn")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("NameTh")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Provinces");
-                });
-
-            modelBuilder.Entity("Shop_Backend.Models.SubDistrict", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("DistrictId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("NameEn")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("NameTh")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("ZipCode")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DistrictId");
-
-                    b.ToTable("SubDistricts");
-                });
-
             modelBuilder.Entity("Shop_Backend.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -355,14 +234,9 @@ namespace Shop_Backend.Migrations
                     b.Property<int>("OwnerId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("ProvinceId")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
 
                     b.HasIndex("OwnerId");
-
-                    b.HasIndex("ProvinceId");
 
                     b.ToTable("Stores");
                 });
@@ -380,41 +254,6 @@ namespace Shop_Backend.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("UserRoles");
-                });
-
-            modelBuilder.Entity("Shop_Backend.Models.Address", b =>
-                {
-                    b.HasOne("Shop_Backend.Models.District", "District")
-                        .WithMany()
-                        .HasForeignKey("DistrictId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Shop_Backend.Models.Province", "Province")
-                        .WithMany()
-                        .HasForeignKey("ProvinceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Shop_Backend.Models.SubDistrict", "SubDistrict")
-                        .WithMany()
-                        .HasForeignKey("SubDistrictId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Shop_Backend.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("District");
-
-                    b.Navigation("Province");
-
-                    b.Navigation("SubDistrict");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Shop_Backend.Models.Cart", b =>
@@ -445,17 +284,6 @@ namespace Shop_Backend.Migrations
                     b.Navigation("Cart");
 
                     b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("Shop_Backend.Models.District", b =>
-                {
-                    b.HasOne("Shop_Backend.Models.Province", "Province")
-                        .WithMany("Districts")
-                        .HasForeignKey("ProvinceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Province");
                 });
 
             modelBuilder.Entity("Shop_Backend.Models.Order", b =>
@@ -499,17 +327,6 @@ namespace Shop_Backend.Migrations
                     b.Navigation("Store");
                 });
 
-            modelBuilder.Entity("Shop_Backend.Models.SubDistrict", b =>
-                {
-                    b.HasOne("Shop_Backend.Models.District", "District")
-                        .WithMany("SubDistricts")
-                        .HasForeignKey("DistrictId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("District");
-                });
-
             modelBuilder.Entity("Store", b =>
                 {
                     b.HasOne("Shop_Backend.Models.User", "Owner")
@@ -518,13 +335,7 @@ namespace Shop_Backend.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Shop_Backend.Models.Province", "Province")
-                        .WithMany()
-                        .HasForeignKey("ProvinceId");
-
                     b.Navigation("Owner");
-
-                    b.Navigation("Province");
                 });
 
             modelBuilder.Entity("UserRole", b =>
@@ -556,19 +367,9 @@ namespace Shop_Backend.Migrations
                     b.Navigation("Items");
                 });
 
-            modelBuilder.Entity("Shop_Backend.Models.District", b =>
-                {
-                    b.Navigation("SubDistricts");
-                });
-
             modelBuilder.Entity("Shop_Backend.Models.Order", b =>
                 {
                     b.Navigation("OrderItems");
-                });
-
-            modelBuilder.Entity("Shop_Backend.Models.Province", b =>
-                {
-                    b.Navigation("Districts");
                 });
 
             modelBuilder.Entity("Shop_Backend.Models.User", b =>

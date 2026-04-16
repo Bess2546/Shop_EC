@@ -9,10 +9,10 @@ namespace Shop_Backend.CartService
     {
         private readonly ICartRepository _cartRepository;
         private readonly IProductRepository _productRepository;
-        public CartService(ICartRepository cartRepository,IProductRepository productRepository)
+        public CartService(ICartRepository cartRepository, IProductRepository productRepository)
         {
-           _cartRepository = cartRepository;
-           _productRepository = productRepository;
+            _cartRepository = cartRepository;
+            _productRepository = productRepository;
         }
 
         public async Task<CartResponse?> GetCartByUserIdAsync(int userId)
@@ -30,7 +30,8 @@ namespace Shop_Backend.CartService
                     ProductName = i.Product!.ProductName,
                     Price = i.Product.Price,
                     Quantity = i.Quantity,
-                    Subtotal = i.Product.Price * i.Quantity
+                    Subtotal = i.Product.Price * i.Quantity,
+                    ImageUrl = i.Product.ImageUrl
 
                 }).ToList(),
                 TotalPrice = cart.Items.Sum(i => i.Product!.Price * i.Quantity)
@@ -47,7 +48,7 @@ namespace Shop_Backend.CartService
             var cart = await _cartRepository.GetCartByUserIdAsync(request.UserId);
             if (cart == null)
             {
-                cart = new Cart { UserId = request.UserId};
+                cart = new Cart { UserId = request.UserId };
                 await _cartRepository.AddCartAsync(cart);
             }
 
@@ -82,7 +83,28 @@ namespace Shop_Backend.CartService
             if (item == null) return false;
 
             await _cartRepository.RemoveCartItemAsync(item);
-            return true;  
+            return true;
+        }
+
+        public async Task<CartResponse?> UpdateCartItemQuantityAsync(int userId, int cartItemId, int quantity)
+        {
+            var cart = await _cartRepository.GetCartByUserIdAsync(userId);
+            if (cart == null) return null;
+
+            var item = cart.Items.FirstOrDefault(i => i.Id == cartItemId);
+            if (item == null) return null;
+
+            if (quantity <= 0)
+            {
+                await _cartRepository.RemoveCartItemAsync(item);
+            }
+            else
+            {
+                item.Quantity = quantity;
+                await _cartRepository.SaveChangesAsync();
+            }
+
+            return (await GetCartByUserIdAsync(userId))!;
         }
     }
 }
