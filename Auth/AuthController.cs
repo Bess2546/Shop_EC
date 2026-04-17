@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Shop_Backend.DTOs;
 
-namespace Shop_Backend.AuthService
+namespace Shop_Backend.Auth
 {
     [ApiController]
     [Route("api/[controller]")]

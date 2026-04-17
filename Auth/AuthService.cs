@@ -6,7 +6,7 @@ using Shop_Backend.Repositories;
 using Shop_Backend.Models;
 using Shop_Backend.DTOs;
 
-namespace Shop_Backend.AuthService
+namespace Shop_Backend.Auth
 {
     public class AuthService : IAuthService
     {

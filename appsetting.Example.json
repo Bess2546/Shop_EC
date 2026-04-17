@@ -6,14 +6,13 @@
     }
   },
   "ConnectionStrings": {
-    "DefaultConnection": "Your Host"
+    "DefaultConnection": "<YOUR_CONNECTION_STRING_HERE>"
   },
   "Jwt": {
-    "Key": "YourSuperSecretKeyAtLeast32Characters!!",
+    "Key": "<SET_VIA_USER_SECRETS_OR_ENV_VAR>",
     "Issuer": "ShopBackend",
     "Audience": "ShopFrontend",
     "ExpireMinutes": 60
   },
-  
   "AllowedHosts": "*"
 }
