@@ -9,7 +9,7 @@ namespace Shop_Backend.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class StoreController : ControllerBase
+    public class StoreController : BaseController
     {
         private readonly IStoreService _service;
 
@@ -73,14 +73,6 @@ namespace Shop_Backend.Controllers
             if (!result) return NotFound();
 
             return NoContent();
-        }
-
-        private int GetCurrentUserId()
-        {
-            var claim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!int.TryParse(claim, out var userId))
-                throw new UnauthorizedAccessException("Invalid user identity");
-            return userId;
         }
     }
 }

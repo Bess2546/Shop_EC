@@ -3,13 +3,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shop_Backend.OrdersService;
 using Shop_Backend.DTOs;
+using Shop_Backend.Controllers;
 
 namespace Shop_Backend.Controller
 {
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
-    public class OrderController : ControllerBase
+    public class OrderController : BaseController
     {
         private readonly IOrderService _service;
 
@@ -49,7 +50,6 @@ namespace Shop_Backend.Controller
             var orders = await _service.GetOrdersByUserIdAsync(userId);
             return Ok(orders);
         }
-
         
         [HttpPut("{id}/cancel")]
         public async Task<IActionResult> Cancel(int id)
@@ -58,20 +58,12 @@ namespace Shop_Backend.Controller
             var order = await _service.GetOrderByIdAsync(id);
             if (order is null) return NotFound();
 
-            // ⭐ Security check
             if (order.UserId != userId) return Forbid();
 
             var result = await _service.CancelOrderAsync(id);
             if (!result) return NotFound();
             return NoContent();
         }
-
-        private int GetCurrentUserId()
-        {
-            var claim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!int.TryParse(claim, out var userId))
-                throw new UnauthorizedAccessException("Invalid user identity");
-            return userId;
-        }
+    
     }
 }

@@ -7,6 +7,6 @@ namespace Shop_Backend.DTOs
 {
     public class CreateOrderRequest
     {
-        public int UserId { get; set; }
+        
     }
 }

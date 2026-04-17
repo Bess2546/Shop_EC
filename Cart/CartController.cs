@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shop_Backend.CartService;
+using Shop_Backend.Controllers;
 using Shop_Backend.DTOs;
 
 
@@ -10,7 +11,7 @@ namespace Shop_Backend.Controller
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
-    public class CartController : ControllerBase
+    public class CartController : BaseController
     {
         private readonly ICartService _service;
 
@@ -54,12 +55,7 @@ namespace Shop_Backend.Controller
             return Ok(cart);
         }
 
-        private int GetCurrentUserId()
-        {
-            var claim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!int.TryParse(claim, out var userId))
-                throw new UnauthorizedAccessException("Invalid user identity");
-            return userId;
-        }
+
+        
     }
 }
