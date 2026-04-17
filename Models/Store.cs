@@ -1,4 +1,4 @@
-using Shop_Backend.Models;
+namespace Shop_Backend.Models;
 
 public class Store
 {
@@ -11,5 +11,4 @@ public class Store
     public int? ProvinceId { get; set; }
     public Province? Province { get; set; }
     public ICollection<Product> Products { get; set; } = new List<Product>();
-
 }

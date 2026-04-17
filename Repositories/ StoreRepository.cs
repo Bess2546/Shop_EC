@@ -1,5 +1,6 @@
 using Shop_Backend.Data;
 using Microsoft.EntityFrameworkCore;
+using Shop_Backend.Models; 
 
 namespace Shop_Backend.Repositories
 {
