@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Shop_Backend.DTOs;
 using Shop_Backend.Models;
 using Shop_Backend.Repositories;
@@ -27,7 +23,6 @@ namespace Shop_Backend.ProductService
                 Stock = product.Stock,
                 StoreId = product.StoreId,
                 ImageUrl = product.ImageUrl
-
             };
         }
 
@@ -40,9 +35,7 @@ namespace Shop_Backend.ProductService
         public async Task<ProductResponse?> GetProductByIdAsync(int id)
         {
             var product = await _repository.GetByIdAsync(id);
-            if (product == null) return null;
-
-            return MapToResponse(product);
+            return product is null ? null : MapToResponse(product);
         }
 
         public async Task<ProductResponse> CreateProductAsync(CreateProductRequest request)
@@ -50,9 +43,9 @@ namespace Shop_Backend.ProductService
             var product = new Product
             {
                 ProductName = request.ProductName,
-                Price = request.Price,
-                Stock = request.Stock,
-                StoreId = request.StoreId,
+                Price = request.Price!.Value,        
+                Stock = request.Stock!.Value,        
+                StoreId = request.StoreId!.Value,    
                 ImageUrl = request.ImageUrl
             };
 
@@ -63,12 +56,13 @@ namespace Shop_Backend.ProductService
         public async Task<bool> UpdateProductAsync(int id, CreateProductRequest request)
         {
             var product = await _repository.GetByIdAsync(id);
-            if (product == null) return false;
+            if (product is null) return false;
 
             product.ProductName = request.ProductName;
-            product.Price = request.Price;
-            product.Stock = request.Stock;
-            product.StoreId = request.StoreId;
+            product.Price = request.Price!.Value;        
+            product.Stock = request.Stock!.Value;        
+            product.StoreId = request.StoreId!.Value;    
+            product.ImageUrl = request.ImageUrl;         
 
             await _repository.UpdateAsync(product);
             return true;
@@ -77,7 +71,7 @@ namespace Shop_Backend.ProductService
         public async Task<bool> DeleteProductAsync(int id)
         {
             var product = await _repository.GetByIdAsync(id);
-            if (product == null) return false;
+            if (product is null) return false;
 
             await _repository.DeleteAsync(product);
             return true;

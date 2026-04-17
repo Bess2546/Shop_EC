@@ -1,4 +1,3 @@
-
 using Shop_Backend.DTOs;
 using Shop_Backend.Models;
 using Shop_Backend.Repositories;
@@ -9,6 +8,7 @@ namespace Shop_Backend.CartService
     {
         private readonly ICartRepository _cartRepository;
         private readonly IProductRepository _productRepository;
+
         public CartService(ICartRepository cartRepository, IProductRepository productRepository)
         {
             _cartRepository = cartRepository;
@@ -18,7 +18,8 @@ namespace Shop_Backend.CartService
         public async Task<CartResponse?> GetCartByUserIdAsync(int userId)
         {
             var cart = await _cartRepository.GetCartByUserIdAsync(userId);
-            if (cart == null) return null;
+            if (cart is null) return null;
+
             return new CartResponse
             {
                 Id = cart.Id,
@@ -32,31 +33,35 @@ namespace Shop_Backend.CartService
                     Quantity = i.Quantity,
                     Subtotal = i.Product.Price * i.Quantity,
                     ImageUrl = i.Product.ImageUrl
-
                 }).ToList(),
                 TotalPrice = cart.Items.Sum(i => i.Product!.Price * i.Quantity)
             };
         }
 
-        public async Task<CartResponse> AddToCartAsync(AddToCartRequest request)
+        public async Task<CartResponse> AddToCartAsync(int userId, AddToCartRequest request)
         {
-            var product = await _productRepository.GetByIdAsync(request.ProductId);
-            if (product == null) throw new Exception("Product not found");
+           
+            var productId = request.ProductId!.Value;
+            var quantity = request.Quantity!.Value;
 
-            if (product.Stock < request.Quantity) throw new Exception("Not enough Stock");
+            var product = await _productRepository.GetByIdAsync(productId)
+                ?? throw new InvalidOperationException("ไม่พบสินค้า");
 
-            var cart = await _cartRepository.GetCartByUserIdAsync(request.UserId);
-            if (cart == null)
+            if (product.Stock < quantity)
+                throw new InvalidOperationException("สินค้าในคลังไม่เพียงพอ");
+
+            var cart = await _cartRepository.GetCartByUserIdAsync(userId);
+            if (cart is null)
             {
-                cart = new Cart { UserId = request.UserId };
+                cart = new Cart { UserId = userId };
                 await _cartRepository.AddCartAsync(cart);
             }
 
-            var existingItem = cart.Items.FirstOrDefault(i => i.ProductId == request.ProductId);
+            var existingItem = cart.Items.FirstOrDefault(i => i.ProductId == productId);
 
-            if (existingItem != null)
+            if (existingItem is not null)
             {
-                existingItem.Quantity += request.Quantity;
+                existingItem.Quantity += quantity;
                 await _cartRepository.SaveChangesAsync();
             }
             else
@@ -64,23 +69,22 @@ namespace Shop_Backend.CartService
                 var newItem = new CartItem
                 {
                     CartId = cart.Id,
-                    ProductId = request.ProductId,
-                    Quantity = request.Quantity
+                    ProductId = productId,
+                    Quantity = quantity
                 };
-
                 await _cartRepository.AddCartItemAsync(newItem);
             }
-            return (await GetCartByUserIdAsync(request.UserId))!;
+
+            return (await GetCartByUserIdAsync(userId))!;
         }
 
         public async Task<bool> RemoveFromCartAsync(int userId, int cartItemId)
         {
             var cart = await _cartRepository.GetCartByUserIdAsync(userId);
+            if (cart is null) return false;
 
-            if (cart == null) return false;
             var item = cart.Items.FirstOrDefault(i => i.Id == cartItemId);
-
-            if (item == null) return false;
+            if (item is null) return false;
 
             await _cartRepository.RemoveCartItemAsync(item);
             return true;
@@ -89,10 +93,10 @@ namespace Shop_Backend.CartService
         public async Task<CartResponse?> UpdateCartItemQuantityAsync(int userId, int cartItemId, int quantity)
         {
             var cart = await _cartRepository.GetCartByUserIdAsync(userId);
-            if (cart == null) return null;
+            if (cart is null) return null;
 
             var item = cart.Items.FirstOrDefault(i => i.Id == cartItemId);
-            if (item == null) return null;
+            if (item is null) return null;
 
             if (quantity <= 0)
             {

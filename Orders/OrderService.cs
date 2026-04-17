@@ -1,21 +1,26 @@
 using Shop_Backend.DTOs;
 using Shop_Backend.Models;
-using Shop_Backend.OrdersService;
 using Shop_Backend.Repositories;
 
 namespace Shop_Backend.OrdersService
 {
     public class OrderService : IOrderService
     {
+        private const string StatusPending = "Pending";
+        private const string StatusCancelled = "Cancelled";
+
         private readonly IOrderRepository _orderRepository;
         private readonly ICartRepository _cartRepository;
         private readonly IProductRepository _productRepository;
 
-        public OrderService(IOrderRepository orderRepository,ICartRepository cartRepository,IProductRepository productRepository)
+        public OrderService(
+            IOrderRepository orderRepository,
+            ICartRepository cartRepository,
+            IProductRepository productRepository)
         {
             _orderRepository = orderRepository;
             _cartRepository = cartRepository;
-           _productRepository = productRepository;
+            _productRepository = productRepository;
         }
 
         private static OrderResponse MapToResponse(Order order)
@@ -39,26 +44,39 @@ namespace Shop_Backend.OrdersService
             };
         }
 
-        public async Task<OrderResponse> CreateOrderAsync(CreateOrderRequest request)
+        public async Task<OrderResponse> CreateOrderAsync(int userId, CreateOrderRequest request)
         {
-            var cart = await _cartRepository.GetCartByUserIdAsync(request.UserId);
-            if (cart == null) throw new Exception("Cart not found");
+            
+            var cart = await _cartRepository.GetCartByUserIdAsync(userId)
+                ?? throw new InvalidOperationException("ไม่พบตะกร้าสินค้า");
+
+            if (!cart.Items.Any())
+                throw new InvalidOperationException("ตะกร้าสินค้าว่างเปล่า");
+
+            
+            foreach (var item in cart.Items)
+            {
+                if (item.Product!.Stock < item.Quantity)
+                    throw new InvalidOperationException(
+                        $"สินค้า '{item.Product.ProductName}' คงเหลือไม่เพียงพอ");
+            }
 
             var order = new Order
             {
-              UserId = request.UserId,
-              OrderDate = DateTime.UtcNow,
-              Status = "Pending",
-              OrderItems = cart.Items.Select(i => new OrderItem
-              {
-                  ProductId = i.ProductId,
-                  Quantity = i.Quantity,
-                  Price = i.Product!.Price
-              }).ToList()
+                UserId = userId,
+                OrderDate = DateTime.UtcNow,
+                Status = StatusPending,
+                OrderItems = cart.Items.Select(i => new OrderItem
+                {
+                    ProductId = i.ProductId,
+                    Quantity = i.Quantity,
+                    Price = i.Product!.Price
+                }).ToList()
             };
 
             await _orderRepository.AddOrderAsync(order);
 
+            // หัก stock
             foreach (var item in cart.Items)
             {
                 item.Product!.Stock -= item.Quantity;
@@ -66,9 +84,10 @@ namespace Shop_Backend.OrdersService
 
             await _productRepository.SaveChangesAsync();
 
+            // ลบ cart items
             foreach (var item in cart.Items.ToList())
             {
-                await   _cartRepository.RemoveCartItemAsync(item);
+                await _cartRepository.RemoveCartItemAsync(item);
             }
 
             return MapToResponse(order);
@@ -77,26 +96,25 @@ namespace Shop_Backend.OrdersService
         public async Task<OrderResponse?> GetOrderByIdAsync(int id)
         {
             var order = await _orderRepository.GetByIdAsync(id);
-            if (order == null) return null;
-
-            return MapToResponse(order);
+            return order is null ? null : MapToResponse(order);
         }
 
         public async Task<IEnumerable<OrderResponse>> GetOrdersByUserIdAsync(int userId)
         {
-            var order = await _orderRepository.GetByUserIdAsync(userId);
-            return order.Select(MapToResponse);
+            var orders = await _orderRepository.GetByUserIdAsync(userId);
+            return orders.Select(MapToResponse);
         }
 
         public async Task<bool> CancelOrderAsync(int orderId)
         {
             var order = await _orderRepository.GetByIdAsync(orderId);
-            if (order == null) return false;
+            if (order is null) return false;
 
-            if(order.Status != "Pending") return false;
+            if (order.Status != StatusPending) return false;
 
-            order.Status = "Cancelled";
+            order.Status = StatusCancelled;
 
+            
             foreach (var item in order.OrderItems)
             {
                 item.Product!.Stock += item.Quantity;

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Shop_Backend.StoreServices;
 using Shop_Backend.DTOs;
@@ -28,7 +29,7 @@ namespace Shop_Backend.Controllers
         public async Task<IActionResult> GetById(int id)
         {
             var store = await _service.GetStoreByIdAsync(id);
-            if (store == null) return NotFound();
+            if (store is null) return NotFound();
 
             return Ok(store);
         }
@@ -36,15 +37,22 @@ namespace Shop_Backend.Controllers
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> Create(CreateStoreRequest request)
-        {
-            var store = await _service.CreateStoreAsync(request);
+        {   
+            var ownerId = GetCurrentUserId();
+            var store = await _service.CreateStoreAsync(ownerId, request);
             return CreatedAtAction(nameof(GetById), new {id = store.Id}, store);
         }
 
         [HttpPut("{id}")]
         [Authorize]
-        public async Task<IActionResult> Update(int id, CreateStoreRequest request)
+        public async Task<IActionResult> Update(int id, UpdateStoreRequest request)
         {
+            var ownerId = GetCurrentUserId();
+            var store = await _service.GetStoreByIdAsync(id);
+            if (store is null) return NotFound();
+
+            if (store.OwnerId != ownerId) return Forbid();
+
             var result = await _service.UpdateStoreAsync(id, request);
             if (!result) return NotFound();
 
@@ -55,10 +63,24 @@ namespace Shop_Backend.Controllers
         [Authorize]
         public async Task<IActionResult> Delete(int id)
         {
+            var ownerId = GetCurrentUserId();
+            var store = await _service.GetStoreByIdAsync(id);
+            if (store is null) return NotFound();
+
+            if (store.OwnerId != ownerId) return Forbid();
+
             var result = await _service.DeleteStoreAsync(id);
             if (!result) return NotFound();
 
             return NoContent();
+        }
+
+        private int GetCurrentUserId()
+        {
+            var claim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(claim, out var userId))
+                throw new UnauthorizedAccessException("Invalid user identity");
+            return userId;
         }
     }
 }

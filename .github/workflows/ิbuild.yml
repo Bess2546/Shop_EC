@@ -15,10 +15,10 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: 17
-          distribution: 'zulu' # Alternative distribution options are available.
+          distribution: 'zulu'
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+          fetch-depth: 0
       - name: Cache SonarQube Cloud packages
         uses: actions/cache@v4
         with:
@@ -46,10 +46,10 @@ jobs:
           ${{ runner.temp }}\scanner\dotnet-sonarscanner begin `
           /k:"Bess2546_Shop_EC" `
           /o:"bess2546" `
-          /d:sonar.login="${{ secrets.SONAR_TOKEN }}" `
+          /d:sonar.token="${{ secrets.SONAR_TOKEN }}" `
           /d:sonar.host.url="https://sonarcloud.io"
 
           dotnet build
 
           ${{ runner.temp }}\scanner\dotnet-sonarscanner end `
-            /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+            /d:sonar.token="${{ secrets.SONAR_TOKEN }}"

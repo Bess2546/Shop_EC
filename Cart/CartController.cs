@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shop_Backend.CartService;
@@ -22,38 +19,47 @@ namespace Shop_Backend.Controller
             _service = service;
         }
 
-        [HttpGet("{userId}")]
-        public async Task<IActionResult> GetById(int userId)
+        [HttpGet]
+        public async Task<IActionResult> GetMyCart()
         {
+            var userId = GetCurrentUserId();
             var cart = await _service.GetCartByUserIdAsync(userId);
-            if (cart == null) return NotFound();
-
+            if (cart is null) return NotFound();
             return Ok(cart);
         }
 
         [HttpPost("items")]
         public async Task<IActionResult> AddItem(AddToCartRequest request)
         {
-            var cart = await _service.AddToCartAsync(request);
+            var userId = GetCurrentUserId();
+            var cart = await _service.AddToCartAsync(userId, request);
             return Ok(cart);
         }
 
-        [HttpDelete("{userId}/items/{cartItemId}")]
-        public async Task<IActionResult> RemoveItem(int userId, int cartItemId)
+        [HttpDelete("items/{cartItemId}")]
+        public async Task<IActionResult> RemoveItem(int cartItemId)
         {
+            var userId = GetCurrentUserId();
             var result = await _service.RemoveFromCartAsync(userId, cartItemId);
             if (!result) return NotFound();
-
             return NoContent();
         }
 
-        [HttpPut("{userId}/items/{cartItemId}")]
-        [Authorize]
-        public async Task<IActionResult> UpdateQuantity(int userId, int cartItemId, [FromBody] UpdateCartItemRequest request)
+        [HttpPut("items/{cartItemId}")]
+        public async Task<IActionResult> UpdateQuantity(int cartItemId, UpdateCartItemRequest request)
         {
-            var cart = await _service.UpdateCartItemQuantityAsync(userId, cartItemId, request.Quantity);
-            if (cart == null) return NotFound();
+            var userId = GetCurrentUserId();
+            var cart = await _service.UpdateCartItemQuantityAsync(userId, cartItemId, request.Quantity!.Value);
+            if (cart is null) return NotFound();
             return Ok(cart);
+        }
+
+        private int GetCurrentUserId()
+        {
+            var claim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(claim, out var userId))
+                throw new UnauthorizedAccessException("Invalid user identity");
+            return userId;
         }
     }
 }

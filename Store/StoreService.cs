@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Shop_Backend.Models;
 using Shop_Backend.DTOs;
 using Shop_Backend.Repositories;
@@ -18,52 +14,43 @@ namespace Shop_Backend.StoreServices
             _repository = repository;
         }
 
+        private static StoreResponse MapToResponse(Store store)
+        {
+            return new StoreResponse
+            {
+                Id = store.Id,
+                Name = store.Name,
+                Description = store.Description,
+                OwnerId = store.OwnerId
+            };
+        }
+
         public async Task<IEnumerable<StoreResponse>> GetAllStoresAsync()
         {
             var stores = await _repository.GetAllAsync();
-            return stores.Select(s => new StoreResponse
-            {
-                Id = s.Id,
-                Name = s.Name,
-                Description = s.Description,
-                OwnerId = s.OwnerId
-            });
+            return stores.Select(MapToResponse);
         }
 
         public async Task<StoreResponse?> GetStoreByIdAsync(int id)
         {
-            var Store = await _repository.GetByIdAsync(id);
-            if (Store == null) return null;
-
-            return new StoreResponse
-            {
-                Id = Store.Id,
-                Name = Store.Name,
-                Description = Store.Description,
-                OwnerId = Store.OwnerId
-            };
+            var store = await _repository.GetByIdAsync(id);
+            return store is null ? null : MapToResponse(store);
         }
 
-        public async Task<StoreResponse> CreateStoreAsync(CreateStoreRequest request)
+        public async Task<StoreResponse> CreateStoreAsync(int ownerId, CreateStoreRequest request)
         {
-            var Store = new Store
+            var store = new Store
             {
                 Name = request.Name,
                 Description = request.Description,
-                OwnerId = request.OwnerId
+                OwnerId = ownerId
             };
 
-            await _repository.AddAsync(Store);
-            return new StoreResponse
-            {
-                Id = Store.Id,
-                Name = Store.Name,
-                Description = Store.Description,
-                OwnerId = Store.OwnerId
-            };
+            await _repository.AddAsync(store);
+            return MapToResponse(store);
         }
 
-        public async Task<bool> UpdateStoreAsync(int id, CreateStoreRequest request)
+        public async Task<bool> UpdateStoreAsync(int id, UpdateStoreRequest request)
         {
             var store = await _repository.GetByIdAsync(id);
             if (store == null) return false;
