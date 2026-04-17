@@ -1,38 +1,42 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Shop_Backend.Repositories;
-using Shop_Backend.Models;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using Shop_Backend.DTOs;
+using Shop_Backend.Models;
+using Shop_Backend.Repositories;
 
 namespace Shop_Backend.Auth
 {
     public class AuthService : IAuthService
     {
         private readonly IUserRepository _userRepository;
-        private readonly IConfiguration _configuration;
+        private readonly JwtSettings _jwtSettings;
+        private readonly SigningCredentials _signingCredentials;
 
-        public AuthService(IUserRepository userRepository, IConfiguration configuration)
+        public AuthService(IUserRepository userRepository, IOptions<JwtSettings> jwtoptions)
         {
             _userRepository = userRepository;
-            _configuration = configuration;
+            _jwtSettings = jwtoptions.Value;
 
+            var keyBytes = Encoding.UTF8.GetBytes(_jwtSettings.Key);
+            _signingCredentials = new SigningCredentials(
+                new SymmetricSecurityKey(keyBytes),
+                SecurityAlgorithms.HmacSha256);
         }
 
         public async Task<LoginResponse?> LoginAsync(LoginRequest request)
         {
             var user = await _userRepository.GetByEmailAsync(request.Email);
-            if (user == null) return null;
+            if (user is null) return null;
 
             if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
                 return null;
 
-            var token = GenerateToken(user);
-
             return new LoginResponse
             {
-                Token = token,
+                Token = GenerateToken(user),
                 User = new UserResponse
                 {
                     Id = user.Id,
@@ -51,17 +55,12 @@ namespace Shop_Backend.Auth
                 new Claim(ClaimTypes.Name, user.Username)
             };
 
-            var key = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
-
             var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"],
-                audience: _configuration["Jwt:Audience"],
+                issuer: _jwtSettings.Issuer,
+                audience: _jwtSettings.Audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(
-                    int.Parse(_configuration["Jwt:ExpireMinutes"]!)),
-                signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
-                );
+                expires: DateTime.UtcNow.AddMinutes(_jwtSettings.ExpireMinutes),
+                signingCredentials: _signingCredentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }

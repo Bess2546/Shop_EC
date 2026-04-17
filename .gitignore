@@ -1,7 +1,35 @@
+# Build outputs
 bin/
 obj/
-appsettings.Development.json
-appsettings.json
-*.user
-.vs/
 
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Rider
+.idea/
+
+# VS Code
+.vscode/
+
+# Configuration with secrets
+appsettings.json
+appsettings.Development.json
+appsettings.Production.json
+appsettings.*.json
+
+# Keep example file
+!appsetting.Example.json
+!appsettings.Example.json
+
+# User secrets (just in case)
+secrets.json
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
