@@ -17,14 +17,16 @@ namespace Shop_Backend.Controller
         }
 
         [HttpPost("product")]
-        public async Task<IActionResult> UploadProductImage(IFormFile file)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UploadProductImage([FromForm] IFormFile file)
         {
             var url = await _uploadService.UploadImageAsync(file, "products");
             return Ok(new { imageUrl = url });
         }
 
         [HttpPost("profile")]
-        public async Task<IActionResult> UploadProfileImage(IFormFile file)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UploadProfileImage([FromForm] IFormFile file)
         {
             var url = await _uploadService.UploadImageAsync(file, "profiles");
             return Ok(new { imageUrl = url });

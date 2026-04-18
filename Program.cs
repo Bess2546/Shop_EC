@@ -58,7 +58,8 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddHttpClient<IUploadService, UploadService>();
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<IUploadService, UploadService>();
 
 // ==================== Authentication ====================
 var jwtSection = builder.Configuration.GetSection(JwtSettings.SectionName);

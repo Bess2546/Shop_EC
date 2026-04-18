@@ -46,15 +46,17 @@ namespace Shop_Backend.OrdersService
 
         public async Task<OrderResponse> CreateOrderAsync(int userId, CreateOrderRequest request)
         {
-            
             var cart = await _cartRepository.GetCartByUserIdAsync(userId)
                 ?? throw new InvalidOperationException("ไม่พบตะกร้าสินค้า");
 
-            if (!cart.Items.Any())
-                throw new InvalidOperationException("ตะกร้าสินค้าว่างเปล่า");
+            var selectedItems = cart.Items
+                .Where(i => request.CartItemIds.Contains(i.Id))
+                .ToList();
 
-            
-            foreach (var item in cart.Items)
+            if (selectedItems.Count == 0)
+                throw new InvalidOperationException("ไม่พบสินค้าที่เลือกในตะกร้า");
+
+            foreach (var item in selectedItems)
             {
                 if (item.Product!.Stock < item.Quantity)
                     throw new InvalidOperationException(
@@ -66,7 +68,7 @@ namespace Shop_Backend.OrdersService
                 UserId = userId,
                 OrderDate = DateTime.UtcNow,
                 Status = StatusPending,
-                OrderItems = cart.Items.Select(i => new OrderItem
+                OrderItems = selectedItems.Select(i => new OrderItem
                 {
                     ProductId = i.ProductId,
                     Quantity = i.Quantity,
@@ -76,16 +78,14 @@ namespace Shop_Backend.OrdersService
 
             await _orderRepository.AddOrderAsync(order);
 
-            // หัก stock
-            foreach (var item in cart.Items)
+            foreach (var item in selectedItems)
             {
                 item.Product!.Stock -= item.Quantity;
             }
 
             await _productRepository.SaveChangesAsync();
 
-            // ลบ cart items
-            foreach (var item in cart.Items.ToList())
+            foreach (var item in selectedItems)
             {
                 await _cartRepository.RemoveCartItemAsync(item);
             }
@@ -114,7 +114,7 @@ namespace Shop_Backend.OrdersService
 
             order.Status = StatusCancelled;
 
-            
+
             foreach (var item in order.OrderItems)
             {
                 item.Product!.Stock += item.Quantity;

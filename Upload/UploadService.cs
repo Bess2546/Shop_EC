@@ -11,14 +11,14 @@ namespace Shop_Backend.UploadService
 
         private static readonly Dictionary<string, string> AllowedTypes = new()
         {
-          ["image/jpeg"] = ".jpg",
-          ["image/png"] = ".png",
-          ["image/webp"] = ".webp"  
+            ["image/jpeg"] = ".jpg",
+            ["image/png"] = ".png",
+            ["image/webp"] = ".webp"
         };
 
         private static readonly HashSet<string> AllowedFolders = new(StringComparer.OrdinalIgnoreCase)
         {
-          "products", "user", "categories", "banner"  
+            "products", "profiles", "categories", "banner"
         };
 
         private const long MaxFileSize = 5 * 1024 * 1024;
@@ -34,19 +34,19 @@ namespace Shop_Backend.UploadService
         {
             if (file is null || file.Length == 0)
                 throw new UploadException("ไม่พบไฟล์ที่อัปโหลด");
-            
+
             if (file.Length > MaxFileSize)
                 throw new UploadException("ไฟล์ต้องไม่เกิน 5MB");
 
             if (!AllowedTypes.TryGetValue(file.ContentType, out var safeExtension))
                 throw new UploadException("อนุญาตเฉพาะไฟล์ .jpg .png .webp");
-            
+
             if (!await IsValidImageAsync(file))
                 throw new UploadException("ไฟล์ไม่ใช่รูปภาพที่ถูกต้อง");
 
             if (string.IsNullOrWhiteSpace(folder) || !AllowedFolders.Contains(folder))
                 throw new UploadException($"Folder '{folder}' ไม่ได้รับอนุญาต");
-            
+
 
             var safeFileName = $"{Guid.NewGuid():N}{safeExtension}";
             var objectPath = $"{folder.ToLowerInvariant()}/{safeFileName}";
@@ -56,7 +56,7 @@ namespace Shop_Backend.UploadService
             return $"{_settings.Url}/storage/v1/object/public/{_settings.Bucket}/{objectPath}";
         }
 
-         private async Task UploadToSupabaseAsync(IFormFile file, string objectPath)
+        private async Task UploadToSupabaseAsync(IFormFile file, string objectPath)
         {
             await using var stream = file.OpenReadStream();
             using var content = new StreamContent(stream);
@@ -92,13 +92,13 @@ namespace Shop_Backend.UploadService
             if (header[0] == 0xFF && header[1] == 0xD8 && header[2] == 0xFF)
                 return true;
 
-            if (header[0] == 0xFF && header[1] == 0xD8 && header[2] == 0xFF)
+            if (header[0] == 0x89 && header[1] == 0x50 && header[2] == 0x4E && header[3] == 0x47)
                 return true;
 
             if (read >= 12 &&
                 header[0] == 0x52 && header[1] == 0x49 && header[2] == 0x46 && header[3] == 0x46 &&
                 header[8] == 0x57 && header[9] == 0x45 && header[10] == 0x42 && header[11] == 0x50)
-                return true;
+            return true;
 
             return false;
         }
