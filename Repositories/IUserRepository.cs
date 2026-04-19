@@ -14,6 +14,6 @@ namespace Shop_Backend.Repositories
         Task UpdateAsync(User user);
         Task DeleteAsync(User user);
 
-        Task<User?> GetByEmailAsync(string Email);
+        Task<User?> GetByEmailAsync(string email);
     }
 }

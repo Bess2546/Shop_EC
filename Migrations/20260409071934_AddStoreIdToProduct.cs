@@ -16,7 +16,8 @@ namespace Shop_Backend.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-
+            // This migration cannot be reverted automatically.
+            // Manual rollback required.
         }
     }
 }
